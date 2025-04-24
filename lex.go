@@ -37,6 +37,15 @@ var (
 	Garbage3 = regexp2.MustCompile(`^.*(\S\S\S)\1{3,}.*$`, 0)
 )
 
+// LexHook is a function to filter results when building a Lexicon
+var LexHook func(*Phrase) bool
+
+func init() {
+	LexHook = func(s *Phrase) bool {
+		return true
+	}
+}
+
 // Phrase is a struct to hold a collection of letters and count of those letters.
 type Phrase struct {
 	Display     string
@@ -53,7 +62,7 @@ func letterFrequency(instr string) []int {
 	// last cell in letter frequency list is sum of whole list
 	out := make([]int, LetterCount)
 	letters := "abcdefghijklmnopqrstuvwxyz"
-	for i := 0; i < len(letters); i++ {
+	for i := range len(letters) {
 		c := strings.Count(instr, string(letters[i]))
 		if c > 0 {
 			out[i] += c
@@ -104,14 +113,16 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 
 	scanner := bufio.NewScanner(file)
 
-	scanChan := make(chan string)
+	scanChan := make(chan *Phrase)
 	blockChan := make(chan struct{})
 	var wg sync.WaitGroup
 
 	go func() {
 		defer close(blockChan)
 		for s := range scanChan {
-			lexicon.Append(NewPhrase(s))
+			if LexHook(s) {
+				lexicon.Append(s)
+			}
 		}
 	}()
 
@@ -154,11 +165,12 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 					}
 				}
 				// POST: Not so garbagey.
-				scanChan <- str
+
+				scanChan <- NewPhrase(str)
 			}(s)
 
 		} else {
-			scanChan <- s
+			scanChan <- NewPhrase(s)
 		}
 	}
 
@@ -193,4 +205,63 @@ func lineCounter(r io.Reader) (int, error) {
 	}
 
 	return count, nil
+}
+
+func newLexiconFromFileOld(phraseFile string, minPhraseLen int) *Lexicon {
+	// read
+	file, err := os.Open(phraseFile)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "unable to open file:", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+
+	count, _ := lineCounter(file)
+	file.Seek(0, 0)
+
+	lexicon := &Lexicon{Phrases: make([]*Phrase, count+1)}
+
+	scanner := bufio.NewScanner(file)
+
+SCAN:
+	for scanner.Scan() {
+		s := scanner.Text()
+		if s[0] == Comment {
+			// skip comments
+			continue
+		}
+
+		s = strings.Split(s, " ")[0] // discard suffix data
+		s = strings.ToLower(s)       // ensure lc
+
+		if !verbose {
+			if crap, _ := Garbage.MatchString(s); crap {
+				// skip garbage
+				continue
+			}
+			if crap, _ := Garbage2.MatchString(s); crap {
+				// skip garbage
+				continue
+			}
+			if crap, _ := Garbage3.MatchString(s); crap {
+				// skip garbage
+				continue
+			}
+
+			for _, b := range s {
+				if b < RuneA || b > RuneZ {
+					continue SCAN
+				}
+			}
+		}
+
+		if len(s) >= minPhraseLen {
+			lexicon.Append(NewPhrase(s))
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "error reading standard input:", err)
+	}
+
+	return lexicon
 }

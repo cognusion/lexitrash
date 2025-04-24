@@ -10,51 +10,34 @@ var (
 	verbose bool
 )
 
-func scour(lex *Lexicon, must []byte, can []byte) <-chan (string) {
-	sChan := make(chan string)
+func scour(must []byte, can []byte) func(*Phrase) bool {
 
-	musti := l2i(must)
-	cani := letterFrequency(string(can))
+	var (
+		musti []int = l2i(must)
+		cani  []int = letterFrequency(string(can))
+	)
 
-	go func() {
-		for _, w := range lex.Phrases {
-			if w == nil {
-				continue
-			}
-
-			ok := true
-			//fmt.Println(w.Display)
-			for _, i := range musti {
-				if w.LetterCount[i] == 0 {
-					ok = false
-					break
-				}
-			}
-			if !ok {
-				//fmt.Println("\tNope on musts")
-				continue
-			}
-			// POST: we have the musts
-
-			for i, c := range cani {
-				//fmt.Printf("\t\t%d == %d. %d >=0?\n", i, c, w.LetterCount[i])
-				if c == 0 && w.LetterCount[i] > 0 {
-					//fmt.Println("\tNope on cants")
-					ok = false
-					break
-				}
-			}
-			if !ok {
-				continue
-			}
-			// POST: We don't have the can'ts
-			//fmt.Println("\tYES!")
-
-			sChan <- w.Display
+	return func(w *Phrase) bool {
+		if w == nil {
+			return false
 		}
-		close(sChan)
-	}()
-	return sChan
+
+		for _, i := range musti {
+			if w.LetterCount[i] == 0 {
+				return false
+			}
+		}
+		// POST: we have the musts
+
+		for i, c := range cani {
+			if c == 0 && w.LetterCount[i] > 0 {
+				return false
+			}
+		}
+		// POST: We don't have the can'ts
+
+		return true
+	}
 }
 
 func l2i(ls []byte) []int {
@@ -74,10 +57,15 @@ func l2i(ls []byte) []int {
 }
 
 func main() {
-	var file *string = pflag.String("file", "./en_full.txt", "Use a different dictionary source")
-	var must *string = pflag.String("must", "", "List of letters that MUST be in the output")
-	var can *string = pflag.String("can", "", "List of NON-MUST letters that may also be in the output")
-	var minSize *int = pflag.Int("size", 6, "Minimum length a word must be to be output")
+	var (
+		file    *string = pflag.String("file", "./en_full.txt", "Use a different dictionary source")
+		must    *string = pflag.String("must", "", "List of letters that MUST be in the output")
+		can     *string = pflag.String("can", "", "List of NON-MUST letters that may also be in the output")
+		minSize *int    = pflag.Int("size", 6, "Minimum length a word must be to be output")
+
+		mustB []byte
+		canB  []byte
+	)
 	pflag.BoolVar(&verbose, "verbose", false, "Toggle to lose your mind with bad results")
 	pflag.Parse()
 
@@ -86,16 +74,19 @@ func main() {
 		return
 	}
 
-	mustB := []byte(*must)
-	canB := []byte(*can)
-	canB = append(canB, mustB...) // put musts on cans
-	lex := NewLexiconFromFile(*file, *minSize)
-
-	//fmt.Fprintf(os.Stderr, "Lex len: %d of %d\n", lex.Length, len(lex.Phrases))
-
-	sChan := scour(lex, mustB, canB)
-	for s := range sChan {
-		fmt.Println(s)
+	mustB = []byte(*must)
+	canB = []byte(*can)
+	if len(mustB) > 0 {
+		canB = append(canB, mustB...) // put musts on cans
 	}
 
+	LexHook = scour(mustB, canB)
+	lex := NewLexiconFromFile(*file, *minSize)
+
+	for _, s := range lex.Phrases {
+		if s == nil {
+			break
+		}
+		fmt.Println(s.Display)
+	}
 }
