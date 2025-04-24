@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/dlclark/regexp2" // because backreferences
 )
@@ -102,6 +103,18 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 	lexicon := &Lexicon{Phrases: make([]*Phrase, count)}
 
 	scanner := bufio.NewScanner(file)
+
+	scanChan := make(chan string)
+	blockChan := make(chan struct{})
+	var wg sync.WaitGroup
+
+	go func() {
+		defer close(blockChan)
+		for s := range scanChan {
+			lexicon.Append(NewPhrase(s))
+		}
+	}()
+
 	for scanner.Scan() {
 		s := scanner.Text()
 		if s[0] == Comment {
@@ -110,40 +123,53 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 		}
 
 		s = strings.Split(s, " ")[0] // discard suffix data
-		s = strings.ToLower(s)       // ensure lc
-
-		ok := true
-
-		if !disableSanity {
-			if crap, _ := Garbage.MatchString(s); crap {
-				// skip garbage
-				continue
-			}
-			if crap, _ := Garbage2.MatchString(s); crap {
-				// skip garbage
-				continue
-			}
-			if crap, _ := Garbage3.MatchString(s); crap {
-				// skip garbage
-				continue
-			}
-
-			for _, b := range s {
-				if b < RuneA || b > RuneZ {
-					ok = false
-					break
-				}
-			}
+		if len(s) < minPhraseLen {
+			// skip too-short phrases
+			continue
 		}
+		s = strings.ToLower(s) // ensure lc
 
-		if ok && len(s) >= minPhraseLen {
-			lexicon.Append(NewPhrase(s))
+		if !verbose {
+			// Remove garbage. Preserve sanity.
+			wg.Add(1)
+			go func(str string) {
+				defer wg.Done()
+
+				if crap, _ := Garbage.MatchString(str); crap {
+					// skip garbage
+					return
+				}
+				if crap, _ := Garbage2.MatchString(str); crap {
+					// skip garbage
+					return
+				}
+				if crap, _ := Garbage3.MatchString(str); crap {
+					// skip garbage
+					return
+				}
+
+				for _, b := range str {
+					if b < RuneA || b > RuneZ {
+						return
+					}
+				}
+				// POST: Not so garbagey.
+				scanChan <- str
+			}(s)
+
+		} else {
+			scanChan <- s
 		}
 	}
+
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "error reading standard input:", err)
 	}
 
+	wg.Wait() // Wait for the goros to finish
+	close(scanChan)
+
+	<-blockChan // wait for the output
 	return lexicon
 }
 

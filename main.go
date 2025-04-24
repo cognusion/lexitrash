@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	disableSanity bool
+	verbose bool
 )
 
 func scour(lex *Lexicon, must []byte, can []byte) <-chan (string) {
@@ -78,7 +78,7 @@ func main() {
 	var must *string = pflag.String("must", "", "List of letters that MUST be in the output")
 	var can *string = pflag.String("can", "", "List of NON-MUST letters that may also be in the output")
 	var minSize *int = pflag.Int("size", 6, "Minimum length a word must be to be output")
-	pflag.BoolVar(&disableSanity, "verbose", false, "Toggle to lose your mind with bad results")
+	pflag.BoolVar(&verbose, "verbose", false, "Toggle to lose your mind with bad results")
 	pflag.Parse()
 
 	if len(*must) == 0 && len(*can) == 0 {
@@ -90,6 +90,8 @@ func main() {
 	canB := []byte(*can)
 	canB = append(canB, mustB...) // put musts on cans
 	lex := NewLexiconFromFile(*file, *minSize)
+
+	//fmt.Fprintf(os.Stderr, "Lex len: %d of %d\n", lex.Length, len(lex.Phrases))
 
 	sChan := scour(lex, mustB, canB)
 	for s := range sChan {
