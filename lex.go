@@ -70,7 +70,14 @@ type Lexicon struct {
 
 // Append adds a Phrase to a Lexicon.
 func (l *Lexicon) Append(w *Phrase) {
-	l.Phrases[l.Length] = w
+	if l.Length < len(l.Phrases) {
+		// we have at least one spare Phrase
+		l.Phrases[l.Length] = w
+	} else {
+		// we are out of Phrases
+		l.Phrases = append(l.Phrases, w)
+		//fmt.Fprintf(os.Stderr, "[WARN] Out of phrases %d of %d\n", l.Length, len(l.Phrases))
+	}
 	l.Length++
 }
 
@@ -92,7 +99,7 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 	count, _ := lineCounter(file)
 	file.Seek(0, 0)
 
-	lexicon := &Lexicon{Phrases: make([]*Phrase, count+1)}
+	lexicon := &Lexicon{Phrases: make([]*Phrase, count)}
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
