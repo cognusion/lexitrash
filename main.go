@@ -42,16 +42,10 @@ func scour(must []byte, can []byte) func(*Phrase) bool {
 
 func l2i(ls []byte) []int {
 	out := make([]int, len(ls))
-	letters := "abcdefghijklmnopqrstuvwxyz"
 
-	for i := range ls {
-		l := rune(ls[i])
-		for a, c := range letters {
-			if l == c {
-				out[i] = a
-				break
-			}
-		}
+	for i, b := range ls {
+		l := rune(b)
+		out[i] = aIndex[l]
 	}
 	return out
 }

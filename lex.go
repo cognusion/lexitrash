@@ -15,10 +15,10 @@ import (
 const (
 	// MaxPhrase is the longest a phrase can be.
 	MaxPhrase = 32
-	// LetterCount is the number of letter frequency counters
-	LetterCount = 27
-	// LetterTotal is the index of a phrase's letter count total
-	LetterTotal = 26
+	// Letters is the universe of characters we count.
+	Letters = "abcdefghijklmnopqrstuvwxyz"
+	// LetterCount is the number of letter frequency counters (len(Letters))
+	LetterCount = 26
 
 	// Comment is the byte representing the character to treat as a comment sigil.
 	Comment = byte(35)
@@ -35,6 +35,8 @@ var (
 	Garbage2 = regexp2.MustCompile(`^.*(\S\S)\1{3,}.*$`, 0)
 	// Garbage3 is any three-letter sequence repeated more than thrice.
 	Garbage3 = regexp2.MustCompile(`^.*(\S\S\S)\1{3,}.*$`, 0)
+
+	aIndex map[rune]int
 )
 
 // LexHook is a function to filter results when building a Lexicon
@@ -43,6 +45,12 @@ var LexHook func(*Phrase) bool
 func init() {
 	LexHook = func(s *Phrase) bool {
 		return true
+	}
+
+	// build aindex
+	aIndex = make(map[rune]int)
+	for i, l := range Letters {
+		aIndex[l] = i
 	}
 }
 
@@ -61,12 +69,10 @@ func NewPhrase(inPhrase string) *Phrase {
 func letterFrequency(instr string) []int {
 	// last cell in letter frequency list is sum of whole list
 	out := make([]int, LetterCount)
-	letters := "abcdefghijklmnopqrstuvwxyz"
-	for i := range len(letters) {
-		c := strings.Count(instr, string(letters[i]))
+	for _, l := range instr {
+		c := strings.Count(instr, string(l))
 		if c > 0 {
-			out[i] += c
-			out[LetterTotal] += c
+			out[aIndex[l]] += c
 		}
 	}
 	return out
@@ -120,9 +126,7 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 	go func() {
 		defer close(blockChan)
 		for s := range scanChan {
-			if LexHook(s) {
-				lexicon.Append(s)
-			}
+			lexicon.Append(s)
 		}
 	}()
 
@@ -146,6 +150,7 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 			go func(str string) {
 				defer wg.Done()
 
+				var p *Phrase
 				if crap, _ := Garbage.MatchString(str); crap {
 					// skip garbage
 					return
@@ -158,7 +163,6 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 					// skip garbage
 					return
 				}
-
 				for _, b := range str {
 					if b < RuneA || b > RuneZ {
 						return
@@ -166,11 +170,17 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 				}
 				// POST: Not so garbagey.
 
-				scanChan <- NewPhrase(str)
+				p = NewPhrase(str)
+				if LexHook(p) {
+					scanChan <- p
+				}
 			}(s)
-
 		} else {
-			scanChan <- NewPhrase(s)
+			// verbose
+			p := NewPhrase(s)
+			if LexHook(p) {
+				scanChan <- p
+			}
 		}
 	}
 
