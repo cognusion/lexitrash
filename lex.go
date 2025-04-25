@@ -2,9 +2,7 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 	"sync"
@@ -71,20 +69,11 @@ func letterFrequency(instr string) []int {
 // Lexicon is a collection of Phrase.
 type Lexicon struct {
 	Phrases []*Phrase
-	Length  int
 }
 
 // Append adds a Phrase to a Lexicon.
 func (l *Lexicon) Append(w *Phrase) {
-	if l.Length < len(l.Phrases) {
-		// we have at least one spare Phrase
-		l.Phrases[l.Length] = w
-	} else {
-		// we are out of Phrases
-		l.Phrases = append(l.Phrases, w)
-		//fmt.Fprintf(os.Stderr, "[WARN] Out of phrases %d of %d\n", l.Length, len(l.Phrases))
-	}
-	l.Length++
+	l.Phrases = append(l.Phrases, w)
 }
 
 // NewLexicon returns an initialized, empty Lexicon.
@@ -102,10 +91,7 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 	}
 	defer file.Close()
 
-	count, _ := lineCounter(file)
-	file.Seek(0, 0)
-
-	lexicon := &Lexicon{Phrases: make([]*Phrase, count)}
+	lexicon := NewLexicon()
 	scanner := bufio.NewScanner(file)
 	scanChan := make(chan *Phrase)
 	blockChan := make(chan struct{})
@@ -187,26 +173,4 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 
 	<-blockChan // wait for the output
 	return lexicon
-}
-
-// lineCounter is a hacky counter of return characters.
-func lineCounter(r io.Reader) (int, error) {
-	buf := make([]byte, 8196)
-	count := 0
-	lineSep := []byte{'\n'}
-
-	for {
-		c, err := r.Read(buf)
-		if err != nil && err != io.EOF {
-			return count, err
-		}
-
-		count += bytes.Count(buf[:c], lineSep)
-
-		if err == io.EOF {
-			break
-		}
-	}
-
-	return count, nil
 }
