@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/pflag"
 )
@@ -68,8 +69,8 @@ func main() {
 		return
 	}
 
-	mustB = []byte(*must)
-	canB = []byte(*can)
+	mustB = []byte(strings.ToLower(*must))
+	canB = []byte(strings.ToLower(*can))
 	if len(mustB) > 0 {
 		canB = append(canB, mustB...) // put musts on cans
 	}
