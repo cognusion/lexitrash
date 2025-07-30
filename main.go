@@ -58,6 +58,7 @@ func main() {
 		can     *string = pflag.String("may", "", "List of NON-MUST letters that may also be in the output")
 		minSize *int    = pflag.Int("size", 6, "Minimum length a word must be to be output")
 		maxSize *int    = pflag.Int("max", 0, "Maximum length a word can be to be output")
+		wordle  *bool   = pflag.Bool("wordle", false, "Presets size=5 max=5")
 
 		mustB []byte
 		canB  []byte
@@ -68,6 +69,11 @@ func main() {
 	if len(*must) == 0 && len(*can) == 0 {
 		pflag.PrintDefaults()
 		return
+	}
+
+	if *wordle {
+		*minSize = 5
+		*maxSize = 5
 	}
 
 	mustB = []byte(strings.ToLower(*must))
