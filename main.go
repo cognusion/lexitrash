@@ -55,7 +55,7 @@ func main() {
 	var (
 		file    *string = pflag.String("file", "./en_full.txt", "Use a different dictionary source")
 		must    *string = pflag.String("must", "", "List of letters that MUST be in the output")
-		can     *string = pflag.String("can", "", "List of NON-MUST letters that may also be in the output")
+		can     *string = pflag.String("may", "", "List of NON-MUST letters that may also be in the output")
 		minSize *int    = pflag.Int("size", 6, "Minimum length a word must be to be output")
 
 		mustB []byte
