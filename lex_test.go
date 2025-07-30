@@ -16,7 +16,7 @@ func Benchmark_NewLexicon(b *testing.B) {
 
 	verbose = false
 	for i := 0; i < b.N; i++ {
-		_ = NewLexiconFromFile(testFile, testSize)
+		_ = NewLexiconFromFile(testFile, testSize, 0)
 	}
 }
 
@@ -27,6 +27,6 @@ func Benchmark_NewLexiconVerbose(b *testing.B) {
 
 	verbose = true
 	for i := 0; i < b.N; i++ {
-		_ = NewLexiconFromFile(testFile, testSize)
+		_ = NewLexiconFromFile(testFile, testSize, 0)
 	}
 }

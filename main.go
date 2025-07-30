@@ -57,6 +57,7 @@ func main() {
 		must    *string = pflag.String("must", "", "List of letters that MUST be in the output")
 		can     *string = pflag.String("may", "", "List of NON-MUST letters that may also be in the output")
 		minSize *int    = pflag.Int("size", 6, "Minimum length a word must be to be output")
+		maxSize *int    = pflag.Int("max", 0, "Maximum length a word can be to be output")
 
 		mustB []byte
 		canB  []byte
@@ -76,7 +77,7 @@ func main() {
 	}
 
 	LexHook = scour(mustB, canB)
-	lex := NewLexiconFromFile(*file, *minSize)
+	lex := NewLexiconFromFile(*file, *minSize, *maxSize)
 
 	for _, s := range lex.Phrases {
 		if s == nil {

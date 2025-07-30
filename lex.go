@@ -82,7 +82,12 @@ func NewLexicon() *Lexicon {
 }
 
 // NewLexiconFromFile returns a Lexicon initialized from the provided file.
-func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
+func NewLexiconFromFile(phraseFile string, minPhraseLen, maxPhraseLen int) *Lexicon {
+	if maxPhraseLen < 1 {
+		// sanity
+		maxPhraseLen = 999
+	}
+
 	// read
 	file, err := os.Open(phraseFile)
 	if err != nil {
@@ -112,8 +117,8 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen int) *Lexicon {
 		}
 
 		s = strings.Split(s, " ")[0] // discard suffix data
-		if len(s) < minPhraseLen {
-			// skip too-short phrases
+		if len(s) < minPhraseLen || len(s) > maxPhraseLen {
+			// skip too-short/too-long phrases
 			continue
 		}
 		s = strings.ToLower(s) // ensure lc
