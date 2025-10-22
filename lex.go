@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
+	"path"
 	"strings"
 	"sync"
 
@@ -25,6 +27,13 @@ const (
 	// RuneZ is a const representing the rune 'z'.
 	RuneZ = rune('z')
 )
+
+const (
+	modeStandard mode = iota // standard uses goros because of garbage
+	modeLinear               // linear uses no goros so WASM doesn't choke
+)
+
+type mode int
 
 var (
 	// Garbage is any letter repeated more than twice.
@@ -81,6 +90,25 @@ func NewLexicon() *Lexicon {
 	return &Lexicon{Phrases: make([]*Phrase, 0)}
 }
 
+// NewLexiconFromBytes returns a Lexicon initialized from the provided byte slice.
+func NewLexiconFromBytes(b []byte, minPhraseLen, maxPhraseLen int, m mode) *Lexicon {
+	if maxPhraseLen < 1 {
+		// sanity
+		maxPhraseLen = 999
+	}
+
+	scanner := bufio.NewScanner(bytes.NewBuffer(b))
+
+	switch m {
+	case modeLinear:
+		return newLexiconLinear(scanner, minPhraseLen, maxPhraseLen, false)
+	case modeStandard:
+		fallthrough
+	default:
+		return newLexicon(scanner, minPhraseLen, maxPhraseLen, false) // assume bytes are clean
+	}
+}
+
 // NewLexiconFromFile returns a Lexicon initialized from the provided file.
 func NewLexiconFromFile(phraseFile string, minPhraseLen, maxPhraseLen int) *Lexicon {
 	if maxPhraseLen < 1 {
@@ -89,15 +117,19 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen, maxPhraseLen int) *Lexi
 	}
 
 	// read
-	file, err := os.Open(phraseFile)
+	file, err := os.Open(path.Clean(phraseFile))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "unable to open file:", err)
 		os.Exit(1)
 	}
 	defer file.Close()
-
-	lexicon := NewLexicon()
 	scanner := bufio.NewScanner(file)
+	return newLexicon(scanner, minPhraseLen, maxPhraseLen, true) // assume file is dirty
+}
+
+func newLexicon(scanner *bufio.Scanner, minPhraseLen, maxPhraseLen int, dirty bool) *Lexicon {
+	lexicon := NewLexicon()
+
 	scanChan := make(chan *Phrase)
 	blockChan := make(chan struct{})
 	var wg sync.WaitGroup
@@ -129,22 +161,8 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen, maxPhraseLen int) *Lexi
 			go func(str string) {
 				defer wg.Done()
 
-				if crap, _ := Garbage.MatchString(str); crap {
-					// skip garbage
+				if dirty && isGarbage(str) {
 					return
-				}
-				if crap, _ := Garbage2.MatchString(str); crap {
-					// skip garbage
-					return
-				}
-				if crap, _ := Garbage3.MatchString(str); crap {
-					// skip garbage
-					return
-				}
-				for _, b := range str {
-					if b < RuneA || b > RuneZ {
-						return
-					}
 				}
 				// POST: Not so garbagey.
 
@@ -178,4 +196,99 @@ func NewLexiconFromFile(phraseFile string, minPhraseLen, maxPhraseLen int) *Lexi
 
 	<-blockChan // wait for the output
 	return lexicon
+}
+
+func newLexiconLinear(scanner *bufio.Scanner, minPhraseLen, maxPhraseLen int, dirty bool) *Lexicon {
+	lexicon := NewLexicon()
+
+	for scanner.Scan() {
+		s := scanner.Text()
+		if s[0] == Comment {
+			// skip comments
+			continue
+		}
+
+		s = strings.Split(s, " ")[0] // discard suffix data
+		if len(s) < minPhraseLen || len(s) > maxPhraseLen {
+			// skip too-short/too-long phrases
+			continue
+		}
+		s = strings.ToLower(s) // ensure lc
+
+		if !verbose {
+			// Remove garbage. Preserve sanity.
+			if dirty && isGarbage(s) {
+				continue
+			}
+			// POST: Not so garbagey.
+
+			p := ppool.Get()
+			p.Set(s)
+			if LexHook(p) {
+				lexicon.Append(p)
+			} else {
+				ppool.Put(p)
+			}
+		} else {
+			// verbose
+
+			p := ppool.Get()
+			p.Set(s)
+			if LexHook(p) {
+				lexicon.Append(p)
+			} else {
+				ppool.Put(p)
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, "error reading standard input:", err)
+	}
+
+	return lexicon
+}
+
+func printCleanFile(fileName string) {
+	// read
+	file, err := os.Open(path.Clean(fileName))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "unable to open file:", err)
+		os.Exit(1)
+	}
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		s := scanner.Text()
+		if s[0] == Comment {
+			// skip comments
+			continue
+		}
+		s = strings.ToLower(strings.Split(s, " ")[0]) // discard suffix data
+		if isGarbage(s) {
+			continue
+		}
+		fmt.Println(s)
+	}
+}
+
+func isGarbage(str string) bool {
+	if crap, _ := Garbage.MatchString(str); crap {
+		// skip garbage
+		return true
+	}
+	if crap, _ := Garbage2.MatchString(str); crap {
+		// skip garbage
+		return true
+	}
+	if crap, _ := Garbage3.MatchString(str); crap {
+		// skip garbage
+		return true
+	}
+	for _, b := range str {
+		if b < RuneA || b > RuneZ {
+			return true
+		}
+	}
+	return false
 }

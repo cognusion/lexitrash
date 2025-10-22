@@ -1,0 +1,123 @@
+{
+  "Apptrix": {
+    "Version": "1"
+  },
+  "Metadata": {
+    "height": 308,
+    "width": 365
+  },
+  "Screens": [
+    {
+      "Object": {
+        "Type": "*fyne.Container",
+        "Layout": "Center",
+        "Objects": [
+          {
+            "Type": "*fyne.Container",
+            "Layout": "VBox",
+            "Name": "theBox",
+            "Objects": [
+              {
+                "Type": "*widget.Label",
+                "Struct": {
+                  "Hidden": false,
+                  "Text": "Welcome to Lexitrash!",
+                  "Alignment": 1,
+                  "Wrapping": 0,
+                  "TextStyle": {
+                    "Bold": true,
+                    "Italic": false,
+                    "Monospace": true,
+                    "Symbol": false,
+                    "TabWidth": 0,
+                    "Underline": false
+                  },
+                  "Truncation": 0,
+                  "Importance": 0,
+                  "SizeName": "",
+                  "Selectable": false
+                }
+              },
+              {
+                "Type": "*widget.Entry",
+                "Name": "mustText",
+                "Struct": {
+                  "Hidden": false,
+                  "Text": "",
+                  "TextStyle": {
+                    "Bold": false,
+                    "Italic": false,
+                    "Monospace": false,
+                    "Symbol": false,
+                    "TabWidth": 0,
+                    "Underline": false
+                  },
+                  "PlaceHolder": "Must",
+                  "Password": false,
+                  "MultiLine": false,
+                  "Wrapping": 1,
+                  "Scroll": 0,
+                  "AlwaysShowValidationError": false,
+                  "CursorRow": 0,
+                  "CursorColumn": 0
+                }
+              },
+              {
+                "Type": "*widget.Entry",
+                "Name": "mayText",
+                "Struct": {
+                  "Hidden": false,
+                  "Text": "",
+                  "TextStyle": {
+                    "Bold": false,
+                    "Italic": false,
+                    "Monospace": false,
+                    "Symbol": false,
+                    "TabWidth": 0,
+                    "Underline": false
+                  },
+                  "PlaceHolder": "May",
+                  "Password": false,
+                  "MultiLine": false,
+                  "Wrapping": 1,
+                  "Scroll": 0,
+                  "AlwaysShowValidationError": false,
+                  "CursorRow": 0,
+                  "CursorColumn": 0
+                }
+              },
+              {
+                "Type": "*widget.Button",
+                "Name": "trashButton",
+                "Actions": {
+                  "OnTapped": "g.trashTap"
+                },
+                "Struct": {
+                  "Hidden": false,
+                  "Text": "Trash!",
+                  "Icon": "DeleteIcon",
+                  "Importance": 1,
+                  "Alignment": 0,
+                  "IconPlacement": 0
+                },
+                "Properties": {
+                  "OnTapped": "g.trashTap"
+                }
+              }
+            ],
+            "Properties": {
+              "dir": "vertical",
+              "layout": "VBox",
+              "name": "theBox"
+            }
+          }
+        ],
+        "Properties": {
+          "dir": "vertical",
+          "layout": "Center"
+        }
+      },
+      "Name": ""
+    }
+  ]
+}
