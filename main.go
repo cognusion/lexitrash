@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/theme"
+	"fyne.io/fyne/v2/widget"
 	"github.com/cognusion/go-lines"
 	"github.com/cognusion/go-memoryguard"
 	"github.com/spf13/pflag"
@@ -214,10 +215,13 @@ func (g *gui) trashTap() {
 	//
 	// Also, the width is padded, so we take 10 chars off the width for that. Could be wrong,
 	// but I can't figure out how to detect the size of padding in Fyne.
-	lines.LinifyStreamSeparatorLineMax(pChan, textBuffer, charWidth-10, linemax, ",")
+	lines.LinifyStreamSeparatorLineMax(pChan, textBuffer, charWidth-3, linemax, ",")
 
 	// show the results
-	d := dialog.NewInformation("Results!", textBuffer.String(), g.win)
+	scr := widget.NewEntry()
+	scr.Text = textBuffer.String()
+
+	d := dialog.NewCustom("Results!", "Ok!", scr, g.win)
 	d.Resize(g.win.Canvas().Size())
 	d.Show()
 }
