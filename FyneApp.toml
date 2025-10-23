@@ -1,8 +1,8 @@
 [Details]
 Name = "Lexitrash"
 ID = "lexitrash.X6518"
-Version = "0.3.0"
-Build = 26
+Version = "1.1.0"
+Build = 27
 
 [Migrations]
 fyneDo = true
