@@ -198,14 +198,19 @@ func (g *gui) trashTap() {
 
 	must = g.mustText.Text
 	may = g.mayText.Text
-	textBuffer := &strings.Builder{}
 
-	pChan := phraseMe() // get the phrases!
+	if must == "" && may == "" {
+		// nothing to do here
+		return
+	}
 
 	// calculate how wide our lines should be
 	w := g.win.Canvas().Size().Width
 	fs := fyne.MeasureText("a", theme.TextSize(), fyne.TextStyle{})
 	charWidth := int(w / fs.Width)
+
+	textBuffer := &strings.Builder{} // where we'll put our results
+	pChan := phraseMe()              // get the phrases!
 
 	// Read from the chan and write into our buffer
 	// NOTE: We are only allowing 100 lines here. Tops.
@@ -213,7 +218,7 @@ func (g *gui) trashTap() {
 	// No joke.
 	// Use the CLI if you need zillions of results.
 	//
-	// Also, the width is padded, so we take 10 chars off the width for that. Could be wrong,
+	// Also, the width is padded, so we take 3 chars off the width for that. Could be wrong,
 	// but I can't figure out how to detect the size of padding in Fyne.
 	lines.LinifyStreamSeparatorLineMax(pChan, textBuffer, charWidth-3, linemax, ",")
 
