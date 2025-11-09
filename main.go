@@ -186,6 +186,11 @@ func gmain() {
 func (g *gui) setupActions() {
 	g.win.Canvas().Focus(g.mustText)
 
+	g.minLength.Value = float64(minSize)
+	g.minLabel.SetText(fmt.Sprintf("%d", minSize))
+	g.maxLength.Value = float64(maxSize)
+	g.maxLabel.SetText(fmt.Sprintf("%d", maxSize))
+
 	// hit the button!
 	g.mustText.OnSubmitted = func(c string) {
 		g.trashTap()
@@ -197,6 +202,16 @@ func (g *gui) setupActions() {
 
 	g.patternText.OnSubmitted = func(c string) {
 		g.trashTap()
+	}
+
+	g.maxLength.OnChanged = func(f float64) {
+		maxSize = int(f)
+		g.maxLabel.SetText(fmt.Sprintf("%d", maxSize))
+	}
+
+	g.minLength.OnChanged = func(f float64) {
+		minSize = int(f)
+		g.minLabel.SetText(fmt.Sprintf("%d", minSize))
 	}
 }
 

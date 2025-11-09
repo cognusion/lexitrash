@@ -13,7 +13,11 @@ import (
 type gui struct {
 	win fyne.Window
 
+	maxLabel    *widget.Label
+	maxLength   *widget.Slider
 	mayText     *widget.Entry
+	minLabel    *widget.Label
+	minLength   *widget.Slider
 	mustText    *widget.Entry
 	patternText *widget.Entry
 	trashButton *widget.Button
@@ -25,7 +29,11 @@ func newGUI() *gui {
 }
 
 func (g *gui) makeUI() fyne.CanvasObject {
+	g.maxLabel = &widget.Label{Text: "0", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false}, Alignment: 1, Wrapping: 0}
+	g.maxLength = &widget.Slider{Min: 0, Max: 100, Value: 0.000000, Orientation: widget.Vertical}
 	g.mayText = &widget.Entry{Text: "", PlaceHolder: "May", MultiLine: false, Password: false}
+	g.minLabel = &widget.Label{Text: "0", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: false, Symbol: false, TabWidth: 0, Underline: false}, Alignment: 1, Wrapping: 0}
+	g.minLength = &widget.Slider{Min: 0, Max: 100, Value: 0.000000, Orientation: widget.Vertical}
 	g.mustText = &widget.Entry{Text: "", PlaceHolder: "Must", MultiLine: false, Password: false}
 	g.patternText = &widget.Entry{Text: "", PlaceHolder: "pattern ", MultiLine: false, Password: false}
 	g.trashButton = &widget.Button{Text: "Trash!", Importance: 1, Icon: theme.DeleteIcon(), Alignment: 0, OnTapped: g.trashTap}
@@ -37,13 +45,20 @@ func (g *gui) makeUI() fyne.CanvasObject {
 		g.trashButton)
 
 	return container.NewCenter(
-		g.theBox)
+		container.NewHBox(
+			g.theBox,
+			container.NewStack(
+				g.minLength,
+				g.minLabel),
+			container.NewStack(
+				g.maxLength,
+				g.maxLabel)))
 }
 
 func (g *gui) makeWindow(a fyne.App) fyne.Window {
 	w := a.NewWindow("main")
 	g.win = w
-	w.Resize(fyne.NewSize(369, 308))
+	w.Resize(fyne.NewSize(381, 308))
 	w.SetContent(g.makeUI())
 	return w
 }
