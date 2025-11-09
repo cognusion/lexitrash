@@ -6,12 +6,12 @@ github.com/BurntSushi/toml v1.5.0 h1:W5quZX/G/csjUnuI8SUYlsHs9M38FC7znL0lIO+DvMg
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/cognusion/go-humanity v1.3.0 h1:06/WaNW34Osg/CLEddz6HVsPQ7FpCjuve5peTU1mz9k=
 github.com/cognusion/go-humanity v1.3.0/go.mod h1:5TovZd/sNx1ZT2BpkqgY0wjpu22ZMZTtKr+8EO+VJ6w=
-github.com/cognusion/go-lines v0.4.0 h1:trqADqcvKisdeV0nGonLpP4fUP34N3og4fkUQsVp3WM=
-github.com/cognusion/go-lines v0.4.0/go.mod h1:RcOmTOhnv0EgmO/sD6wN5yCfWCuyVvbx1gqoCL6i0/Q=
+github.com/cognusion/go-lines v0.5.0 h1:ond8rtLcf80bMwHyiyevrd/WbOzGDc4TyFZA2GZFUuA=
+github.com/cognusion/go-lines v0.5.0/go.mod h1:bDvj/c/DDp5pSxYASxFRLLCmhsaUL5VDlSUnYIsQecc=
 github.com/cognusion/go-memoryguard v1.2.0 h1:vK8xU+C6SSuRgCNqxMOYM8lqYBvVLF7C/u6wM6yISac=
 github.com/cognusion/go-memoryguard v1.2.0/go.mod h1:5iBsy+J8BXosjjBZl1nTTe91kTqVh9usudfJD1HV/Dk=
-github.com/cognusion/go-recyclable v1.3.0 h1:9jusb7O06Df3dNEwbmWTmbNXM0tuvFo4qa4AvPqbxEo=
-github.com/cognusion/go-recyclable v1.3.0/go.mod h1:UPIqjekn6iTRbI8dj3SGpictG8mL1zoH0r+91OulOnw=
+github.com/cognusion/go-recyclable/v2 v2.0.0 h1:K4yB89o7pFnvnqFLIm+phBZa1WRq2iAzdfYaIF0i+6A=
+github.com/cognusion/go-recyclable/v2 v2.0.0/go.mod h1:VgtbK2uRMx6W2lF1qmtQD9Fl5+ZaISiLNsqe8d14AYQ=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -87,8 +87,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/yuin/goldmark v1.7.13 h1:GPddIs617DnBLFFVJFgpo1aBfe/4xcvMc3SB5t/D0pA=
 github.com/yuin/goldmark v1.7.13/go.mod h1:ip/1k0VRfGynBgxOz0yCqHrbZXhcjxyuS66Brc7iBKg=
-golang.org/x/exp v0.0.0-20251017212417-90e834f514db h1:by6IehL4BH5k3e3SJmcoNbOobMey2SLpAF79iPOEBvw=
-golang.org/x/exp v0.0.0-20251017212417-90e834f514db/go.mod h1:j/pmGrbnkbPtQfxEe5D0VQhZC6qKbfKifgD0oM7sR70=
+golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 h1:mgKeJMpvi0yx/sU5GsxQ7p6s2wtOnGAHZWCHUM4KGzY=
+golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546/go.mod h1:j/pmGrbnkbPtQfxEe5D0VQhZC6qKbfKifgD0oM7sR70=
 golang.org/x/image v0.32.0 h1:6lZQWq75h7L5IWNk0r+SCpUJ6tUVd3v4ZHnbRKLkUDQ=
 golang.org/x/image v0.32.0/go.mod h1:/R37rrQmKXtO6tYXAjtDLwQgFLHmhW+V6ayXlxzP2Pc=
 golang.org/x/net v0.46.0 h1:giFlY12I07fugqwPuWJi68oOnpfqFnJIJzaIIm2JVV4=

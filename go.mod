@@ -7,7 +7,7 @@ require github.com/dlclark/regexp2 v1.11.5
 require (
 	fyne.io/fyne/v2 v2.7.0
 	github.com/cognusion/go-humanity v1.3.0
-	github.com/cognusion/go-lines v0.4.0
+	github.com/cognusion/go-lines v0.5.0
 	github.com/cognusion/go-memoryguard v1.2.0
 	github.com/spf13/pflag v1.0.10
 	golang.org/x/term v0.36.0
@@ -16,6 +16,7 @@ require (
 require (
 	fyne.io/systray v1.11.1-0.20250603113521-ca66a66d8b58 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
+	github.com/cognusion/go-recyclable/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
@@ -41,7 +42,7 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/yuin/goldmark v1.7.13 // indirect
-	golang.org/x/exp v0.0.0-20251017212417-90e834f514db // indirect
+	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/image v0.32.0 // indirect
 	golang.org/x/net v0.46.0 // indirect
 	golang.org/x/sys v0.37.0 // indirect

@@ -15,6 +15,7 @@ type gui struct {
 
 	mayText     *widget.Entry
 	mustText    *widget.Entry
+	patternText *widget.Entry
 	trashButton *widget.Button
 	theBox      *fyne.Container
 }
@@ -26,11 +27,13 @@ func newGUI() *gui {
 func (g *gui) makeUI() fyne.CanvasObject {
 	g.mayText = &widget.Entry{Text: "", PlaceHolder: "May", MultiLine: false, Password: false}
 	g.mustText = &widget.Entry{Text: "", PlaceHolder: "Must", MultiLine: false, Password: false}
+	g.patternText = &widget.Entry{Text: "", PlaceHolder: "pattern ", MultiLine: false, Password: false}
 	g.trashButton = &widget.Button{Text: "Trash!", Importance: 1, Icon: theme.DeleteIcon(), Alignment: 0, OnTapped: g.trashTap}
 	g.theBox = container.NewVBox(
 		&widget.Label{Text: "Welcome to Lexitrash!", TextStyle: fyne.TextStyle{Bold: true, Italic: false, Monospace: true, Symbol: false, TabWidth: 0, Underline: false}, Alignment: 1, Wrapping: 0},
 		g.mustText,
 		g.mayText,
+		g.patternText,
 		g.trashButton)
 
 	return container.NewCenter(
@@ -38,9 +41,9 @@ func (g *gui) makeUI() fyne.CanvasObject {
 }
 
 func (g *gui) makeWindow(a fyne.App) fyne.Window {
-	w := a.NewWindow("main.gui.go")
+	w := a.NewWindow("main")
 	g.win = w
-	w.Resize(fyne.NewSize(365, 308))
+	w.Resize(fyne.NewSize(369, 308))
 	w.SetContent(g.makeUI())
 	return w
 }

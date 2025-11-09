@@ -17,6 +17,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/cognusion/go-lines"
 	"github.com/cognusion/go-memoryguard"
+	"github.com/dlclark/regexp2"
 	"github.com/spf13/pflag"
 	"golang.org/x/term"
 )
@@ -31,11 +32,12 @@ var (
 	may     string
 	minSize int
 	maxSize int
-	wordle  bool
+	wordle  string
 	clean   bool
 	csv     bool
 	debug   bool
 	linemax int
+	match   *regexp2.Regexp
 
 	runlock  sync.Mutex
 	debugOut = log.New(io.Discard, "", 0)
@@ -45,9 +47,9 @@ func main() {
 	pflag.StringVar(&file, "file", "", "Use a different dictionary source")
 	pflag.StringVar(&must, "must", "", "List of letters that MUST be in the output")
 	pflag.StringVar(&may, "may", "", "List of NON-MUST letters that may also be in the output")
-	pflag.IntVar(&minSize, "size", 6, "Minimum length a word must be to be output")
+	pflag.IntVar(&minSize, "size", 5, "Minimum length a word must be to be output")
 	pflag.IntVar(&maxSize, "max", 0, "Maximum length a word can be to be output")
-	pflag.BoolVar(&wordle, "wordle", false, "Presets size=5 max=5")
+	pflag.StringVar(&wordle, "wordle", "", "Presets size=5 max=5, and assumes a regular expression to match (e.g. '.u..e').")
 	pflag.BoolVar(&verbose, "verbose", false, "Toggle to lose your mind with bad results")
 	pflag.BoolVar(&csv, "csv", false, "Output in csv format (CLI only)")
 	pflag.BoolVar(&debug, "debug", false, "Enable debug output to stderr")
@@ -57,9 +59,17 @@ func main() {
 	pflag.CommandLine.MarkHidden("clean")
 	pflag.Parse()
 
-	if wordle {
+	if wordle != "" {
 		minSize = 5
 		maxSize = 5
+
+		var err error
+		match, err = regexp2.Compile(wordle, 0)
+		if err != nil {
+			fmt.Printf("Cannot compile '%s' into regexp: %s\n", wordle, err.Error())
+			os.Exit(1)
+		}
+
 	}
 
 	if debug {
@@ -116,7 +126,7 @@ func phraseMe() <-chan string {
 			canB = append(canB, mustB...) // put musts on cans
 		}
 
-		LexHook = scour(mustB, canB)
+		LexHook = scour(mustB, canB, match)
 		if file != "" {
 			// File
 			lex = NewLexiconFromFile(file, minSize, maxSize)
@@ -184,6 +194,10 @@ func (g *gui) setupActions() {
 	g.mayText.OnSubmitted = func(c string) {
 		g.trashTap()
 	}
+
+	g.patternText.OnSubmitted = func(c string) {
+		g.trashTap()
+	}
 }
 
 func (g *gui) trashTap() {
@@ -202,6 +216,15 @@ func (g *gui) trashTap() {
 	if must == "" && may == "" {
 		// nothing to do here
 		return
+	}
+
+	if g.patternText.Text != "" {
+		var err error
+		match, err = regexp2.Compile(g.patternText.Text, 0)
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("cannot compile '%s' into regexp: %s", g.patternText.Text, err.Error()), g.win)
+			return
+		}
 	}
 
 	// calculate how wide our lines should be
@@ -231,7 +254,7 @@ func (g *gui) trashTap() {
 	d.Show()
 }
 
-func scour(must []byte, can []byte) func(*Phrase) bool {
+func scour(must []byte, can []byte, pattern *regexp2.Regexp) func(*Phrase) bool {
 
 	var (
 		musti []int = l2i(must)
@@ -256,6 +279,15 @@ func scour(must []byte, can []byte) func(*Phrase) bool {
 			}
 		}
 		// POST: We don't have the can'ts
+
+		if pattern != nil {
+			matched, err := pattern.MatchString(w.Display)
+			if err != nil {
+				return false
+			} else if !matched {
+				return false
+			}
+		}
 
 		return true
 	}
