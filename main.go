@@ -91,6 +91,7 @@ func main() {
 	if csv {
 		width := 128
 
+		//#nosec G115 - FD will not overflow it.
 		fd := int(os.Stdin.Fd())
 		if term.IsTerminal(fd) {
 			tw, _, err := term.GetSize(fd)
